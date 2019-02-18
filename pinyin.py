@@ -31,16 +31,25 @@ class PinYin(object):
                     line = f_line.split('   ')
                     self.word_dict[line[0]] = line[1]
 
-
     def hanzi2pinyin(self, string=""):
         result = []
-        if not isinstance(string, unicode):
+        if not isinstance(string, str):
             string = string.decode("utf-8")
-        
-        for char in string:
-            key = '%X' % ord(char)
-            result.append(self.word_dict.get(key, char).split()[0][:-1].lower())
-
+        split_strings = string.split()
+        for split_string in split_strings:
+            spell = ''
+            for char in split_string:
+                key = '%04X' % ord(char)
+                if ord(char) > 128 and spell != '':                 
+                    result.append(spell)
+                    spell = ''
+                elif ord(char) <= 128 and ord(char) >=0:
+                    spell += char
+                elif ord(char) >= 13312:        #   (13312)10 = (3400)16 
+                    temp = self.word_dict.get(key, char).split()[0][:-1].lower()
+                    result.append(temp)
+            if spell != '':                 
+                result.append(spell)
         return result
 
 
@@ -55,7 +64,7 @@ class PinYin(object):
 if __name__ == "__main__":
     test = PinYin()
     test.load_word()
-    string = "钓鱼岛是中国的"
-    print "in: %s" % string
-    print "out: %s" % str(test.hanzi2pinyin(string=string))
-    print "out: %s" % test.hanzi2pinyin_split(string=string, split="-")
+    string = "钓鱼岛是中国的inherent territory"
+    print ("in: %s" % string)
+    print ("out: %s" % str(test.hanzi2pinyin(string=string)))
+    print ("out: %s" % test.hanzi2pinyin_split(string=string, split="-"))
